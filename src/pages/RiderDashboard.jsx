@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRide } from '../context/RideContext';
 import { useCarpool } from '../context/CarpoolContext';
 import Header from '../components/common/Header';
+import MobileBottomNav from '../components/common/MobileBottomNav';
 import UserProfile from '../components/auth/UserProfile';
 import RideHistory from '../components/payment/RideHistory';
 import ActiveRide from '../components/ride/ActiveRide';
@@ -41,6 +42,7 @@ const RiderDashboard = () => {
       <Header />
       
       <div className="dashboard-container">
+        {/* Desktop Sidebar */}
         <div className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="user-avatar-large">
@@ -90,6 +92,7 @@ const RiderDashboard = () => {
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="dashboard-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
@@ -196,6 +199,41 @@ const RiderDashboard = () => {
                   </div>
                 )}
               </div>
+
+              {/* Savings Summary */}
+              <div className="section-card">
+                <h2>Your Savings</h2>
+                <div className="savings-summary">
+                  <div className="saving-item">
+                    <div className="saving-icon">
+                      <FaUsers />
+                    </div>
+                    <div className="saving-details">
+                      <h4>Carpooling Savings</h4>
+                      <p className="saving-amount">
+                        ${(totalSpent * 0.3).toFixed(2)}
+                      </p>
+                      <p className="saving-description">
+                        Saved by sharing rides
+                      </p>
+                    </div>
+                  </div>
+                  <div className="saving-item">
+                    <div className="saving-icon">
+                      <FaDollarSign />
+                    </div>
+                    <div className="saving-details">
+                      <h4>Average Cost Per Ride</h4>
+                      <p className="saving-amount">
+                        ${completedRides > 0 ? (totalSpent / completedRides).toFixed(2) : '0.00'}
+                      </p>
+                      <p className="saving-description">
+                        Cost efficiency
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           
@@ -213,6 +251,9 @@ const RiderDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

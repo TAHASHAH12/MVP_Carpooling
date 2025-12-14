@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRide } from '../context/RideContext';
 import { useCarpool } from '../context/CarpoolContext';
 import Header from '../components/common/Header';
+import MobileBottomNav from '../components/common/MobileBottomNav';
 import UserProfile from '../components/auth/UserProfile';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
@@ -19,7 +20,8 @@ import {
   FaPlus,
   FaCheckCircle,
   FaUsers,
-  FaRoute
+  FaRoute,
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 
 const DriverDashboard = () => {
@@ -37,12 +39,14 @@ const DriverDashboard = () => {
     .reduce((sum, ride) => sum + (parseFloat(ride.fare) || 0), 0);
   const activeCarpools = mycarpools?.filter(cp => cp.status === 'open').length || 0;
   const totalCarpools = mycarpools?.length || 0;
+  const totalPassengers = mycarpools?.reduce((sum, cp) => sum + (cp.passengers?.length || 0), 0) || 0;
 
   return (
     <div className="dashboard-page">
       <Header />
       
       <div className="dashboard-container">
+        {/* Desktop Sidebar */}
         <div className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="user-avatar-large driver">
@@ -119,6 +123,7 @@ const DriverDashboard = () => {
           )}
         </div>
 
+        {/* Main Content */}
         <div className="dashboard-content">
           {activeTab === 'overview' && (
             <div className="overview-tab">
@@ -200,6 +205,49 @@ const DriverDashboard = () => {
                 </div>
               </div>
 
+              {/* Performance Metrics */}
+              <div className="section-card">
+                <h2>Performance Metrics</h2>
+                <div className="performance-grid">
+                  <div className="performance-item">
+                    <div className="performance-icon">
+                      <FaUsers />
+                    </div>
+                    <div className="performance-details">
+                      <h4>{totalPassengers}</h4>
+                      <p>Total Passengers</p>
+                    </div>
+                  </div>
+                  <div className="performance-item">
+                    <div className="performance-icon">
+                      <FaRoute />
+                    </div>
+                    <div className="performance-details">
+                      <h4>{totalCarpools}</h4>
+                      <p>Total Carpools</p>
+                    </div>
+                  </div>
+                  <div className="performance-item">
+                    <div className="performance-icon">
+                      <FaStar />
+                    </div>
+                    <div className="performance-details">
+                      <h4>{user?.rating || 5.0}</h4>
+                      <p>Average Rating</p>
+                    </div>
+                  </div>
+                  <div className="performance-item">
+                    <div className="performance-icon">
+                      <FaDollarSign />
+                    </div>
+                    <div className="performance-details">
+                      <h4>${completedRides > 0 ? (totalEarnings / completedRides).toFixed(2) : '0.00'}</h4>
+                      <p>Avg Earnings/Ride</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Recent Activity */}
               <div className="section-card">
                 <h2>Recent Rides</h2>
@@ -256,14 +304,20 @@ const DriverDashboard = () => {
                         </span>
                       </div>
                       <div className="carpool-route-info">
-                        <p className="route-from">{carpool.origin?.name}</p>
+                        <p className="route-from">
+                          <FaMapMarkerAlt color="#4CAF50" />
+                          {carpool.origin?.name}
+                        </p>
                         <div className="route-arrow">→</div>
-                        <p className="route-to">{carpool.destination?.name}</p>
+                        <p className="route-to">
+                          <FaMapMarkerAlt color="#f44336" />
+                          {carpool.destination?.name}
+                        </p>
                       </div>
                       <div className="carpool-stats">
                         <div className="stat">
                           <FaUsers />
-                          <span>{carpool.passengers?.length || 0}/{carpool.totalSeats}</span>
+                          <span>{carpool.passengers?.length || 0}/{carpool.totalSeats} seats</span>
                         </div>
                         <div className="stat">
                           <FaDollarSign />
@@ -280,6 +334,14 @@ const DriverDashboard = () => {
                           ))}
                         </div>
                       )}
+                      {carpool.description && (
+                        <div className="carpool-description">
+                          <p>{carpool.description}</p>
+                        </div>
+                      )}
+                      <div className="carpool-earnings">
+                        <strong>Potential Earnings:</strong> ${(carpool.pricePerSeat * (carpool.passengers?.length || 0)).toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -300,6 +362,46 @@ const DriverDashboard = () => {
             <div className="profile-tab">
               <h1>My Profile</h1>
               <UserProfile />
+              
+              {/* Driver Verification Status */}
+              {user?.driverInfo && (
+                <div className="section-card" style={{ marginTop: '2rem' }}>
+                  <h2>Driver Verification Status</h2>
+                  <div className="verification-status">
+                    {user.driverInfo.verified ? (
+                      <div className="verified-status">
+                        <FaCheckCircle size={48} color="#10b981" />
+                        <h3>Account Verified</h3>
+                        <p>Your driver account has been verified and you can start accepting rides.</p>
+                      </div>
+                    ) : (
+                      <div className="pending-status">
+                        <FaClock size={48} color="#f59e0b" />
+                        <h3>Verification Pending</h3>
+                        <p>Your documents are under review. You'll receive a confirmation email within 24-48 hours.</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="driver-documents">
+                    <h3>Submitted Documents</h3>
+                    <div className="document-list">
+                      <div className="document-item">
+                        <FaCheckCircle color="#10b981" />
+                        <span>Driver's License: {user.driverInfo.licenseNumber}</span>
+                      </div>
+                      <div className="document-item">
+                        <FaCheckCircle color="#10b981" />
+                        <span>Insurance Policy: {user.driverInfo.insurance}</span>
+                      </div>
+                      <div className="document-item">
+                        <FaCheckCircle color="#10b981" />
+                        <span>Vehicle Registration: {user.driverInfo.licensePlate}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
@@ -319,10 +421,12 @@ const DriverDashboard = () => {
                         </div>
                         <div className="history-route">
                           <div className="route-point">
+                            <FaMapMarkerAlt color="#4CAF50" />
                             <span>{ride.origin?.name}</span>
                           </div>
                           <div className="route-line"></div>
                           <div className="route-point">
+                            <FaMapMarkerAlt color="#f44336" />
                             <span>{ride.destination?.name}</span>
                           </div>
                         </div>
@@ -352,6 +456,7 @@ const DriverDashboard = () => {
         </div>
       </div>
 
+      {/* Create Carpool Modal */}
       <Modal
         isOpen={showCarpoolModal}
         onClose={() => setShowCarpoolModal(false)}
@@ -359,6 +464,9 @@ const DriverDashboard = () => {
       >
         <CreateCarpool onClose={() => setShowCarpoolModal(false)} />
       </Modal>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };
